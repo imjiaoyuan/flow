@@ -1,0 +1,12 @@
+name = "flow"
+type = "javascript"
+account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+workers_dev = true
+compatibility_date = "2025-01-01"
+
+[env.production]
+name = "flow"
+route = ""
+r2_buckets = [
+  { binding = "CONV_BUCKET", bucket_name = "flow" }
+]

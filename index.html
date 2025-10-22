@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>flow — File exchange</title>
+	<link rel="stylesheet" href="style.css" />
+	<!-- Font Awesome for icons -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+	<div id="app">
+		<aside class="sidebar">
+			<div class="brand">
+				<h1>flow</h1>
+				<div class="device" id="deviceName"></div>
+			</div>
+			<div class="controls">
+				<button id="newConvBtn">+ New Conversation</button>
+			</div>
+			<ul id="conversations" class="convs"></ul>
+		</aside>
+
+		<main class="main">
+			<header class="topbar">
+				<div class="conn">
+					<span id="connStatus">idle</span>
+				</div>
+			</header>
+
+			<section class="chat-area">
+				<!-- Empty state: shown when no conversations exist -->
+				<div id="emptyState" class="empty" style="display:none; padding:24px; text-align:center; color:var(--muted);">
+				  No conversations. Click "New Conversation" to create one.
+				</div>
+
+				<ul id="messages" class="msgs"></ul>
+			</section>
+
+			<footer class="composer">
+				<div class="inputs">
+					<input id="msgInput" placeholder="Type a message, press Enter" />
+					<label class="fileBtn">
+						<input id="fileInput" type="file" />
+						File
+					</label>
+					<button id="sendBtn">Send</button>
+				</div>
+
+				<!-- signaling removed: using Worker/R2 backend, no manual SDP UI required -->
+			</footer>
+		</main>
+	</div>
+
+	<!-- Auto default for testing: point API to the same origin (local-server) when not configured -->
+	<script>
+	  if (!window.FLOW_WORKER_API) {
+	    window.FLOW_WORKER_API = window.location.origin;
+	  }
+	</script>
+	<!-- Password gate: replaced at deploy time (placeholder __FRONTEND_PASSWORD_HASH__) -->
+	<script>
+	  // Password hash placeholder (base64 of SHA-256). If still '__FRONTEND_PASSWORD_HASH__' -> no password enforced.
+	  const PASSWORD_HASH = '__FRONTEND_PASSWORD_HASH__';
+
+	  async function sha256Base64(str){
+	    const enc = new TextEncoder().encode(str);
+	    const buf = await crypto.subtle.digest('SHA-256', enc);
+	    // base64 encode
+	    let binary = '';
+	    const bytes = new Uint8Array(buf);
+	    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+	    return btoa(binary);
+	  }
+
+	  (async () => {
+	    // if placeholder not replaced, skip gating
+	    if (!PASSWORD_HASH || PASSWORD_HASH === '__FRONTEND_PASSWORD_HASH__') return;
+	    const unlocked = localStorage.getItem('flow.unlocked') === PASSWORD_HASH;
+	    if (unlocked) return;
+	    // prompt loop
+	    while (true) {
+	      const p = prompt('Enter site password:');
+	      if (p === null) {
+	        document.body.innerHTML = '<div style="padding:24px;text-align:center;color:#666">Password required</div>';
+	        return;
+	      }
+	      try {
+	        const h = await sha256Base64(p);
+	        if (h === PASSWORD_HASH) {
+	          localStorage.setItem('flow.unlocked', PASSWORD_HASH);
+	          break;
+	        } else {
+	          alert('Incorrect password');
+	        }
+	      } catch (e) {
+	        console.error('crypto error', e);
+	        alert('Unable to verify password in this browser');
+	        return;
+	      }
+	    }
+	  })();
+	</script>
+	<script src="app.js"></script>
+</body>
+</html>
