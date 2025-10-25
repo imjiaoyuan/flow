@@ -7,3 +7,7 @@ account_id = "REPLACE_WITH_ACCOUNT_ID"
 binding = "STORAGE"
 bucket_name = "flow"
 preview_bucket_name = "flow"
+
+[site]
+bucket = "./"
+include = ["index.html", "style.css", "app.js"]
