@@ -1,13 +1,9 @@
-name = "flow-app"
+name = "flow"
 main = "worker.js"
 compatibility_date = "2025-01-15"
 account_id = "REPLACE_WITH_ACCOUNT_ID"
 
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "flow-conversations"
-preview_bucket_name = "flow-conversations-preview"
-
-[site]
-bucket = "./"
-include = ["index.html", "style.css", "app.js"]
+bucket_name = "flow"
+preview_bucket_name = "flow"
